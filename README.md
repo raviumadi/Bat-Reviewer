@@ -74,12 +74,13 @@ BatReviewer();
 
 - Click **Load Folder** and select a directory containing .wav files.
 - Files will be listed in the left panel.
+- Use the recordings provided in the rec folder to get started if you don’t yet have your own data at hand. These files were captured with the **ESPERDYNE** system and can be used for testing, playback, or analysis.
 
 
 
 ### **3. Navigate and Inspect**
 
-- Use < Prev and Next > buttons or click in the file list.
+- Use `< Prev` and `Next >` buttons or click in the file list.
 - The waveform and spectrogram update automatically.
 
 
