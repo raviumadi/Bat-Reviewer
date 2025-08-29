@@ -4,6 +4,8 @@ BatReviewer() is a MATLAB GUI for browsing, listening to, and curating ultrasoni
 
 It is designed to streamline the workflow of reviewing .wav files recorded in the field by combining waveform and spectrogram visualisation, heterodyne listening with adjustable carrier frequency, and easy file export tools.
 
+**See [Embedded Ultrasonics Project](https://github.com/raviumadi/Embedded_Ultrasonics) for bat call recorders based on popular Microcontrollers**
+
 
 
 <p align="center">
