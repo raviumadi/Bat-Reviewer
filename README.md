@@ -1,6 +1,6 @@
 # **Bat Reviewer – Bat Call Review and Listening GUI**
 
-BatReviewer() is a MATLAB GUI for browsing, listening to, and curating ultrasonic bat call recordings.
+*BatReviewer* is a MATLAB GUI for browsing, listening to, and curating ultrasonic bat call recordings.
 
 It is designed to streamline the workflow of reviewing .wav files recorded in the field by combining waveform and spectrogram visualisation, heterodyne listening with adjustable carrier frequency, and easy file export tools.
 
@@ -42,7 +42,7 @@ It is designed to streamline the workflow of reviewing .wav files recorded in th
 
 - **Heterodyne Listening**
 
-  - Adjustable **carrier frequency** (15–85 kHz).
+  - Adjustable **carrier frequency** (15 – (0.5xFs) kHz).
 - **Channel selection** (left/right/mono or multi-channel).
   - **Volume control** (0–300%).
   - Audio is automatically resampled to 44.1 kHz for playback.
@@ -124,7 +124,7 @@ The GUI relies on the helper function:
 ### **Functionality:**
 
 1. Reads a .wav file and extracts the specified channel.
-2. Applies a bandpass filter (1–90 kHz) to clean the signal.
+2. Applies a bandpass filter (1–0.45xFs kHz) to clean the signal.
 3. Mixes the signal with a cosine carrier at the chosen frequency (carrierFreq).
 4. Applies an automatic gain correction to preserve RMS energy.
 5. Applies an optional **low-pass FIR filter** (≤30 kHz cutoff) to remove high-frequency artefacts.

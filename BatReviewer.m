@@ -1,125 +1,126 @@
 function BatReviewer()
 % WAV File Browser with Copy, Heterodyne Listening (with Volume), and Spectrogram Controls
-    % --- Ensure 'src' (and its subfolders) is on path, once ---
-    rootDir = fileparts(mfilename('fullpath'));
-    srcDir  = fullfile(rootDir, 'src');
+% --- Ensure 'src' (and its subfolders) is on path, once ---
+rootDir = fileparts(mfilename('fullpath'));
+srcDir  = fullfile(rootDir, 'src');
 
-    if exist(srcDir, 'dir')
-        % exact-path membership test (robust vs contains/partial matches)
-        pcell = strsplit(path, pathsep);
-        onPath = any(strcmpi(pcell, srcDir));
-        if ~onPath
-            addpath(genpath(srcDir));  % use addpath(srcDir) if you don't want subfolders
-        end
+if exist(srcDir, 'dir')
+    % exact-path membership test (robust vs contains/partial matches)
+    pcell = strsplit(path, pathsep);
+    onPath = any(strcmpi(pcell, srcDir));
+    if ~onPath
+        addpath(genpath(srcDir));  % use addpath(srcDir) if you don't want subfolders
     end
+end
 
-    % --- Window ---
-    f = figure('Name','Bat Reviewer V1.0','NumberTitle','off', ...
-        'Position',[100 100 1200 600], 'MenuBar','figure','Toolbar','figure', ...
-        'Color',[0.94 0.94 0.94], 'Resize', 'off', 'CloseRequestFcn',@onClose);
+% --- Window ---
+f = figure('Name','Bat Reviewer V1.0','NumberTitle','off', ...
+    'Position',[100 100 1200 600], 'MenuBar','figure','Toolbar','figure', ...
+    'Color',[0.94 0.94 0.94], 'Resize', 'off', 'CloseRequestFcn',@onClose);
 
-    % ===== LEFT: file list + nav =====
-    listbox = uicontrol(f,'Style','listbox','Position',[20 180 200 400], ...
-        'FontSize',10,'Callback',@fileSelected);
+% ===== LEFT: file list + nav =====
+listbox = uicontrol(f,'Style','listbox','Position',[20 180 200 400], ...
+    'FontSize',10,'Callback',@fileSelected);
 
-    uicontrol(f,'Style','pushbutton','String','Load Folder', ...
-        'Position',[20 140 80 30],'FontSize',10, 'FontWeight', 'bold', 'Callback',@loadFolder);
-    uicontrol(f,'Style','pushbutton','String','< Prev', ...
-        'Position',[120 140 50 30],'FontSize',10,'Callback',@prevFile);
-    uicontrol(f,'Style','pushbutton','String','Next >', ...
-        'Position',[170 140 50 30],'FontSize',10,'Callback',@nextFile);
+uicontrol(f,'Style','pushbutton','String','Load Folder', ...
+    'Position',[20 140 80 30],'FontSize',10, 'FontWeight', 'bold', 'Callback',@loadFolder);
+uicontrol(f,'Style','pushbutton','String','< Prev', ...
+    'Position',[120 140 50 30],'FontSize',10,'Callback',@prevFile);
+uicontrol(f,'Style','pushbutton','String','Next >', ...
+    'Position',[170 140 50 30],'FontSize',10,'Callback',@nextFile);
 
-    infoText = uicontrol(f,'Style','text','Position',[25 5 500 25], ...
-        'HorizontalAlignment','left','FontSize',10, 'FontWeight', 'bold', 'String','');
+infoText = uicontrol(f,'Style','text','Position',[25 5 500 25], ...
+    'HorizontalAlignment','left','FontSize',10, 'FontWeight', 'bold', 'String','');
 
-    % Export panel (compact; bottom-left)
-    exportPanel = uipanel('Parent',f,'Title','Export','FontWeight', 'bold','Position',[0.02 0.05 0.30 0.15]);
-    uicontrol(exportPanel,'Style','text','String','Destination:', ...
-        'HorizontalAlignment','center','Position',[2 50 80 20]);
-    destEdit = uicontrol(exportPanel,'Style','edit','String','', ...
-        'HorizontalAlignment','left','Position',[80 50 150 23],'BackgroundColor','w');
-    uicontrol(exportPanel,'Style','pushbutton','String','Browse…', ...
-        'Position',[247 50 80 20],'Callback',@pickDest);
-    uicontrol(exportPanel,'Style','text','String','If exists:', ...
-        'HorizontalAlignment','center','Position',[2 20 80 20]);
-    policyPopup = uicontrol(exportPanel,'Style','popupmenu', ...
-        'String',{'Ask','Overwrite','Auto-rename'},'Position',[80 20 120 20],'Value',1);
-    uicontrol(exportPanel,'Style','pushbutton','String','Copy Current', ...
-        'Position',[247 20 80 20],'Callback',@copyCurrent);
+% Export panel (compact; bottom-left)
+exportPanel = uipanel('Parent',f,'Title','Export','FontWeight', 'bold','Position',[0.02 0.05 0.30 0.15]);
+uicontrol(exportPanel,'Style','text','String','Destination:', ...
+    'HorizontalAlignment','center','Position',[2 50 80 20]);
+destEdit = uicontrol(exportPanel,'Style','edit','String','', ...
+    'HorizontalAlignment','left','Position',[80 50 150 23],'BackgroundColor','w');
+uicontrol(exportPanel,'Style','pushbutton','String','Browse…', ...
+    'Position',[247 50 80 20],'Callback',@pickDest);
+uicontrol(exportPanel,'Style','text','String','If exists:', ...
+    'HorizontalAlignment','center','Position',[2 20 80 20]);
+policyPopup = uicontrol(exportPanel,'Style','popupmenu', ...
+    'String',{'Ask','Overwrite','Auto-rename'},'Position',[80 20 120 20],'Value',1);
+uicontrol(exportPanel,'Style','pushbutton','String','Copy Current', ...
+    'Position',[247 20 80 20],'Callback',@copyCurrent);
 
-    % ===== RIGHT: drawing + controls in dedicated panels =====
-    rightPanel = uipanel('Parent',f,'Position',[0.2 0.20 0.8 0.80], 'BorderType','none');
+% ===== RIGHT: drawing + controls in dedicated panels =====
+rightPanel = uipanel('Parent',f,'Position',[0.2 0.20 0.8 0.80], 'BorderType','none');
 
-    % Waveform (top)
-    axWave = axes('Parent',rightPanel,'Position',[0.08 0.58 0.86 0.37], ...
-        'Box','on','PositionConstraint','innerposition');
-    ylabel(axWave,'Amplitude'); grid(axWave,'on');
+% Waveform (top)
+axWave = axes('Parent',rightPanel,'Position',[0.08 0.58 0.86 0.37], ...
+    'Box','on','PositionConstraint','innerposition');
+ylabel(axWave,'Amplitude'); grid(axWave,'on');
 
-    % Spectrogram (bottom)
-    axSpec = axes('Parent',rightPanel,'Position',[0.08 0.12 0.86 0.36], ...
-        'Box','on','PositionConstraint','innerposition');
-    xlabel(axSpec,'Time (s)'); ylabel(axSpec,'Frequency (kHz)'); grid(axSpec,'on');
-    % title(axSpec,'Spectrogram');
+% Spectrogram (bottom)
+axSpec = axes('Parent',rightPanel,'Position',[0.08 0.12 0.86 0.36], ...
+    'Box','on','PositionConstraint','innerposition');
+xlabel(axSpec,'Time (s)'); ylabel(axSpec,'Frequency (kHz)'); grid(axSpec,'on');
+% title(axSpec,'Spectrogram');
 
-    % Controls (bottom-right, own panel)
-    ctrlPanel = uipanel('Parent',f,'Title','Listening & Spectrogram Controls', ...
-        'FontWeight', 'bold', 'Position',[0.33 0.05 0.66 0.15]);
+% Controls (bottom-right, own panel)
+ctrlPanel = uipanel('Parent',f,'Title','Listening & Spectrogram Controls', ...
+    'FontWeight', 'bold', 'Position',[0.33 0.05 0.66 0.15]);
 
-    % Channel
-    uicontrol(ctrlPanel,'Style','text','String','Channel:', ...
-        'HorizontalAlignment','center','Position',[2 50 60 20]);
-    chanPopup = uicontrol(ctrlPanel,'Style','popupmenu','String',{'Left (1)','Right (2)'}, ...
-        'HorizontalAlignment', 'center', 'Position',[50 50 80 20],'Value',1,'Callback',@onChannelChange);
+% Channel
+uicontrol(ctrlPanel,'Style','text','String','Channel:', ...
+    'HorizontalAlignment','center','Position',[2 50 60 20]);
+chanPopup = uicontrol(ctrlPanel,'Style','popupmenu','String',{'Left (1)','Right (2)'}, ...
+    'HorizontalAlignment', 'center', 'Position',[50 50 80 20],'Value',1,'Callback',@onChannelChange);
 
-    % Carrier slider + edit
-    uicontrol(ctrlPanel,'Style','text','String','Carrier (Hz):', ...
-        'HorizontalAlignment','center','Position',[130 50 60 20]);
-    cfSlider = uicontrol(ctrlPanel,'Style','slider','Min',15000,'Max',85000,'Value',40000, ...
-        'Position',[190 50 150 20], 'HorizontalAlignment', 'center', 'Callback',@syncCFEdit);
-    cfEdit = uicontrol(ctrlPanel,'Style','edit','String','40000', ...
-        'Position',[350 50 70 20], 'HorizontalAlignment', 'center', 'BackgroundColor','w','Callback',@syncCFSlider);
+% Carrier slider + edit
+uicontrol(ctrlPanel,'Style','text','String','Carrier (Hz):', ...
+    'HorizontalAlignment','center','Position',[130 50 60 20]);
+% Carrier slider + edit
+cfSlider = uicontrol(ctrlPanel,'Style','slider','Min',15000,'Max',85000,'Value',40000, ...
+    'Position',[190 50 150 20], 'HorizontalAlignment','center', 'Callback', @syncCFSlider);
+cfEdit   = uicontrol(ctrlPanel,'Style','edit','String','40000', ...
+    'Position',[350 50 70 20], 'HorizontalAlignment','center', 'BackgroundColor','w', 'Callback', @syncCFEdit);
 
-    % Volume (linear multiplier 0–300%)
-    uicontrol(ctrlPanel,'Style','text','String','Volume:', ...
-        'HorizontalAlignment','center','Position',[475 50 40 20]);
-    volSlider = uicontrol(ctrlPanel,'Style','slider','Min',0,'Max',3,'Value',1, ...
-        'Position',[520 50 120 20], 'HorizontalAlignment', 'center', 'Callback',@syncVolEdit);
-    volEdit = uicontrol(ctrlPanel,'Style','edit','String','1.00', ...
-        'Position',[655 50 30 20], 'HorizontalAlignment', 'center', 'BackgroundColor','w','Callback',@syncVolSlider);
+% Volume (linear multiplier 0–300%)
+uicontrol(ctrlPanel,'Style','text','String','Volume:', ...
+    'HorizontalAlignment','center','Position',[475 50 40 20]);
+volSlider = uicontrol(ctrlPanel,'Style','slider','Min',0,'Max',3,'Value',1, ...
+    'Position',[520 50 120 20], 'HorizontalAlignment', 'center', 'Callback',@syncVolEdit);
+volEdit = uicontrol(ctrlPanel,'Style','edit','String','1.00', ...
+    'Position',[655 50 30 20], 'HorizontalAlignment', 'center', 'BackgroundColor','w','Callback',@syncVolSlider);
 
-    % Listen / Update buttons
-    listenBtn = uicontrol(ctrlPanel,'Style','togglebutton','String','Listen', ...
-        'Position',[715 5 70 70],'Callback',@toggleListen);
+% Listen / Update buttons
+listenBtn = uicontrol(ctrlPanel,'Style','togglebutton','String','Listen', ...
+    'Position',[715 5 70 70],'Callback',@toggleListen);
 
-    % Spectrogram params
-    uicontrol(ctrlPanel,'Style','text','String','FFT:', ...
-        'HorizontalAlignment','center','Position',[2 20 60 20]);
-    nfftPopup = uicontrol(ctrlPanel,'Style','popupmenu','String',{'256','512','1024','2048'}, ...
-        'Position',[50 20 70 20],'Value',2);
-    uicontrol(ctrlPanel,'Style','text','String','Window:', ...
-        'HorizontalAlignment','center','Position',[130 20 60 20]);
-    winPopup = uicontrol(ctrlPanel,'Style','popupmenu','String',{'Hann','Hamming','Blackman'}, ...
-        'Position',[190 20 120 20],'Value',1);
-    uicontrol(ctrlPanel,'Style','text','String','Overlap:', ...
-        'HorizontalAlignment','center', 'Position',[300 20 60 20]);
-    ovlPopup = uicontrol(ctrlPanel,'Style','popupmenu','String',{'50%','75%'}, ...
-        'Position',[350 20 80 20],'Value',2);
-    uicontrol(ctrlPanel,'Style','pushbutton','String','Update Spectrogram', ...
-        'Position',[475 5 220 40], 'HorizontalAlignment','center', 'Callback',@updateSpectrogram);
+% Spectrogram params
+uicontrol(ctrlPanel,'Style','text','String','FFT:', ...
+    'HorizontalAlignment','center','Position',[2 20 60 20]);
+nfftPopup = uicontrol(ctrlPanel,'Style','popupmenu','String',{'256','512','1024','2048'}, ...
+    'Position',[50 20 70 20],'Value',2);
+uicontrol(ctrlPanel,'Style','text','String','Window:', ...
+    'HorizontalAlignment','center','Position',[130 20 60 20]);
+winPopup = uicontrol(ctrlPanel,'Style','popupmenu','String',{'Hann','Hamming','Blackman'}, ...
+    'Position',[190 20 120 20],'Value',1);
+uicontrol(ctrlPanel,'Style','text','String','Overlap:', ...
+    'HorizontalAlignment','center', 'Position',[300 20 60 20]);
+ovlPopup = uicontrol(ctrlPanel,'Style','popupmenu','String',{'50%','75%'}, ...
+    'Position',[350 20 80 20],'Value',2);
+uicontrol(ctrlPanel,'Style','pushbutton','String','Update Spectrogram', ...
+    'Position',[475 5 220 40], 'HorizontalAlignment','center', 'Callback',@updateSpectrogram);
 
-    % Status (single line, safe area)
-    statusText = uicontrol(f,'Style','text','String','', ...
-        'HorizontalAlignment','left','Position',[320 140 800 22]);
+% Status (single line, safe area)
+statusText = uicontrol(f,'Style','text','String','', ...
+    'HorizontalAlignment','left','Position',[320 140 800 22]);
 
-    % ===== DATA / STATE =====
-    fileList = {}; folderPath = ''; currentIndex = 1;
-    player = []; isListening = false;
+% ===== DATA / STATE =====
+fileList = {}; folderPath = ''; currentIndex = 1;
+player = []; isListening = false;
 
-    % Context menu
-    cm = uicontextmenu(f); uimenu(cm,'Label','Copy This File','Callback',@copyCurrent);
-    set(listbox,'UIContextMenu',cm);
+% Context menu
+cm = uicontextmenu(f); uimenu(cm,'Label','Copy This File','Callback',@copyCurrent);
+set(listbox,'UIContextMenu',cm);
 
-    % ===== Callbacks =====
+% ===== Callbacks =====
     function loadFolder(~,~)
         p = uigetdir(pwd,'Select folder with .wav files'); if isequal(p,0),return,end
         folderPath = p; d = dir(fullfile(folderPath,'*.wav')); fileList = {d.name};
@@ -144,61 +145,87 @@ function BatReviewer()
         currentIndex = min(numel(fileList),currentIndex+1); set(listbox,'Value',currentIndex); plotCurrentFile();
     end
 
-   function plotCurrentFile()
-    stopListeningIfActive();
-    if isempty(fileList), return; end
+    function setCarrierLimits(fs)
+        nyq = fs/2;
+        % Choose sensible bounds; keep your 15 kHz floor
+        newMin = 15000;
+        newMax = floor(nyq);          % = Fs/2
 
-    filename = fileList{currentIndex};
-    filepath = fullfile(folderPath, filename);
-
-    try
-        [y, fs] = audioread(filepath);
-        t = (0:size(y,1)-1)/fs;
-        nCh = size(y,2);
-
-        % --- preserve current channel selection (if any)
-        prevVal = get(chanPopup,'Value');
-
-        if nCh == 1
-            % Mono file: lock to channel 1
-            set(chanPopup,'String',{'Mono (1)'}, ...
-                          'Value',1, ...
-                          'Enable','off');
-            ch = 1;
-        else
-            % Multi-channel: build labels dynamically
-            if nCh == 2
-                labels = {'Left (1)','Right (2)'}; % stereo labels
-            else
-                labels = arrayfun(@(k) sprintf('Channel %d',k),1:nCh,'UniformOutput',false);
-            end
-            % Clamp restored selection
-            ch = max(1, min(prevVal, nCh));
-            set(chanPopup,'String',labels, ...
-                          'Value',ch, ...
-                          'Enable','on');
+        if newMax <= newMin
+            % Fs too low for 15 kHz carrier – disable listening gracefully
+            set(cfSlider,'Enable','off'); set(cfEdit,'Enable','off');
+            if isgraphics(listenBtn), set(listenBtn,'Enable','off'); end
+            setStatus(sprintf('Carrier disabled: Fs=%d Hz (Nyquist %.0f Hz).', fs, nyq));
+            return;
         end
 
-        % --- plot waveform
-        cla(axWave);
-        plot(axWave, t, y(:,ch), 'k');
-        grid(axWave,'on');
-        xlabel(axWave,'Time (s)');
-        ylabel(axWave,'Amplitude');
-        title(axWave, sprintf('File: %s (ch %d)', filename, ch), 'Interpreter','none');
+        % Enable and apply limits
+        set(cfSlider,'Enable','on','Min',newMin,'Max',newMax);
 
-        % --- update info
-        set(infoText,'String', ...
-            sprintf('Fs: %d Hz | Duration: %.2f s | Samples: %d | Channels: %d', ...
-                    fs, size(y,1)/fs, size(y,1), nCh));
+        % Clamp current value and reflect in edit box
+        cur = get(cfSlider,'Value');
+        cur = max(newMin, min(newMax, round(cur)));
+        set(cfSlider,'Value',cur);
+        set(cfEdit,'String',num2str(cur));
 
-        % --- update spectrogram (uses current popup value)
-        updateSpectrogram();
-
-    catch ME
-        errordlg(['Failed to read file: ' filepath newline ME.message], 'Read Error');
+        if isgraphics(listenBtn), set(listenBtn,'Enable','on'); end
     end
-end
+    function plotCurrentFile()
+        stopListeningIfActive();
+        if isempty(fileList), return; end
+
+        filename = fileList{currentIndex};
+        filepath = fullfile(folderPath, filename);
+
+        try
+            [y, fs] = audioread(filepath);
+            t = (0:size(y,1)-1)/fs;
+            nCh = size(y,2);
+
+            % --- preserve current channel selection (if any)
+            prevVal = get(chanPopup,'Value');
+
+            if nCh == 1
+                % Mono file: lock to channel 1
+                set(chanPopup,'String',{'Mono (1)'}, ...
+                    'Value',1, ...
+                    'Enable','off');
+                ch = 1;
+            else
+                % Multi-channel: build labels dynamically
+                if nCh == 2
+                    labels = {'Left (1)','Right (2)'}; % stereo labels
+                else
+                    labels = arrayfun(@(k) sprintf('Channel %d',k),1:nCh,'UniformOutput',false);
+                end
+                % Clamp restored selection
+                ch = max(1, min(prevVal, nCh));
+                set(chanPopup,'String',labels, ...
+                    'Value',ch, ...
+                    'Enable','on');
+            end
+
+            % --- plot waveform
+            cla(axWave);
+            plot(axWave, t, y(:,ch), 'k');
+            grid(axWave,'on');
+            xlabel(axWave,'Time (s)');
+            ylabel(axWave,'Amplitude');
+            title(axWave, sprintf('File: %s (ch %d)', filename, ch), 'Interpreter','none');
+
+            % --- update info
+            set(infoText,'String', ...
+                sprintf('Fs: %d Hz | Duration: %.2f s | Samples: %d | Channels: %d', ...
+                fs, size(y,1)/fs, size(y,1), nCh));
+
+            % --- update spectrogram (uses current popup value)
+            updateSpectrogram();
+
+        catch ME
+            errordlg(['Failed to read file: ' filepath newline ME.message], 'Read Error');
+        end
+        setCarrierLimits(fs);
+    end
 
     function onChannelChange(~,~), if isempty(fileList),return,end, plotCurrentFile(); end
 
@@ -246,14 +273,25 @@ end
 
     function setStatus(msg), set(statusText,'String',msg); drawnow limitrate; end
 
-    % ===== Heterodyne + Volume =====
+% ===== Heterodyne + Volume =====
+% EDIT callback: edit -> slider
     function syncCFEdit(~,~)
-        v = round(get(cfSlider,'Value')); set(cfEdit,'String',num2str(v));
+        v = str2double(get(cfEdit,'String'));
+        if isnan(v), v = get(cfSlider,'Value'); end
+        lo = get(cfSlider,'Min'); hi = get(cfSlider,'Max');
+        v = max(lo, min(hi, round(v)));
+        set(cfSlider,'Value', v);
+        set(cfEdit,'String', num2str(v));
         if isListening, restartListening(); end
     end
+
+% SLIDER callback: slider -> edit
     function syncCFSlider(~,~)
-        v = str2double(get(cfEdit,'String')); if isnan(v), v=get(cfSlider,'Value'); end
-        v = max(15000,min(85000,round(v))); set(cfSlider,'Value',v); set(cfEdit,'String',num2str(v));
+        v  = round(get(cfSlider,'Value'));
+        lo = get(cfSlider,'Min'); hi = get(cfSlider,'Max');
+        v  = max(lo, min(hi, v));
+        set(cfSlider,'Value', v);
+        set(cfEdit,'String', num2str(v));
         if isListening, restartListening(); end
     end
     function syncVolEdit(~,~)
@@ -304,7 +342,7 @@ end
     function listenStopped(), isListening=false; if isgraphics(listenBtn), set(listenBtn,'String','Listen','Value',0); end; setStatus('Playback finished.'); end
     function stopListeningIfActive(), if ~isempty(player), try, stop(player); end, end, isListening=false; if isgraphics(listenBtn), set(listenBtn,'String','Listen','Value',0); end, end
 
-    % ===== Spectrogram =====
+% ===== Spectrogram =====
     function updateSpectrogram(~,~)
         if isempty(fileList), return; end
         filename = fileList{currentIndex}; filepath = fullfile(folderPath,filename);
@@ -330,7 +368,7 @@ end
         switch lower(name), case 'hann', w=hann(N,'periodic'); case 'hamming', w=hamming(N,'periodic'); case 'blackman', w=blackman(N,'periodic'); otherwise, w=hann(N,'periodic'); end
     end
 
-    % ===== Housekeeping =====
+% ===== Housekeeping =====
     function onClose(~,~)
         % Optional: remove the paths we added
         if exist('srcDir','var') && exist(srcDir,'dir')

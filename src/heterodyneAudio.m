@@ -26,7 +26,7 @@ function [heterodynedAudio, fs] = heterodyneAudio(audioFilename, carrierFreq, ch
 
     audioSignal = audioData(:, channel);
     rms_audioSignal = rms(audioSignal);
-    audioSignal = bandpassFilter(audioSignal, 1e3, 90e3, 4, fs);
+    audioSignal = bandpassFilter(audioSignal, 1e3, 0.45*fs, 4, fs);
     rms_audioSignal_postFilter = rms(audioSignal);
     audioSignal = audioSignal * (rms_audioSignal/rms_audioSignal_postFilter);
 
