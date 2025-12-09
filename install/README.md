@@ -14,9 +14,9 @@ The first time it is run, it may require additional setup in the backend; theref
 
 ## macOS Installation
 
-![](/Users/ravi/Documents/projects/batsy_pro/batsy_field_array/esperdyne_manuscript/repo/img/mac_app.png)
+![](../img/mac_app.png)
 
-![mac_install_1](/Users/ravi/Documents/projects/batsy_pro/batsy_field_array/esperdyne_manuscript/repo/img/mac_install_1.png)
+![mac_install_1](../img/mac_install_1.png)
 
 ![mac_install_2](/Users/ravi/Documents/projects/batsy_pro/batsy_field_array/esperdyne_manuscript/repo/img/mac_install_2.png)
 
