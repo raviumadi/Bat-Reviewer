@@ -1,0 +1,16 @@
+About BatReviewer
+BatReviewer is a lightweight tool for browsing, listening to, and organising field recordings of bat echolocation calls. It enables rapid visualisation of waveforms and spectrograms, basic signal inspection, file copying, and heterodyne audio preview for quick in-field analyses.
+
+Use Disclaimer
+BatReviewer is provided “as-is” and without any guarantee of accuracy, fitness for a particular purpose, or suitability for professional ecological or compliance-critical assessments.
+It must not be used as the sole tool for species identification, regulatory reporting, or safety-critical decision making. Users assume full responsibility for interpretations of the displayed or processed data.
+
+License Information
+Unless otherwise stated, BatReviewer is released under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+You are free to share, adapt, and build upon the software and generated outputs, provided that appropriate credit is given to the original author.
+
+Data and Privacy Notice
+BatReviewer processes audio files locally on your device and does not transmit or store data externally. Users are responsible for ensuring that any field recordings processed with this software comply with local regulations, permit requirements, and institutional data-handling policies.
+
+Liability
+The author is not liable for any direct or indirect damages arising from the use of this software, including but not limited to data loss, misinterpretation of results, or erroneous ecological conclusions.

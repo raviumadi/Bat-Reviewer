@@ -1,6 +1,8 @@
 # **Bat Reviewer – Bat Call Review and Listening GUI**
 
-*BatReviewer* is a MATLAB GUI for browsing, listening to, and curating ultrasonic bat call recordings.
+*Bat Reviewer* is a MATLAB GUI for browsing, listening to, and curating ultrasonic bat call recordings.
+
+*Standalone installation packages are provided for macOS and Windows x64 in the `install` folder.* 
 
 It is designed to streamline the workflow of reviewing .wav files recorded in the field by combining waveform and spectrogram visualisation, heterodyne listening with adjustable carrier frequency, and easy file export tools.
 
